@@ -1,4 +1,5 @@
-# MyMosa® Landing + Age Gate (Next.js)
+# MyMosa® Landing (Next.js Static Site)
+
 
 ## Run locally
 ```bash
