@@ -18,6 +18,3 @@ vercel
 1) Push this folder to GitHub  
 2) In Vercel: Add New Project → Import → Deploy
 
-## Age gate
-- Users must pass `/verify` first.
-- Cookie: `mymosa_age_verified=true` (30 days).
