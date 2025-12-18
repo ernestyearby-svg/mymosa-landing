@@ -1,504 +1,582 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo } from "react";
 
-const flavors = [
-  { name: "Classic Orange", img: "/card_can_1.png", color: "#F28C1B" },
-  { name: "Pineapple", img: "/card_can_2.png", color: "#F5C12D" },
-  { name: "Tropical Blend", img: "/card_can_3.png", color: "#2FB8A6" },
-  { name: "Strawberry", img: "/card_can_4.png", color: "#E23B4A" },
-  { name: "Blood Orange", img: "/card_can_5.png", color: "#C93A1C" },
-  { name: "Watermelon", img: "/card_can_6.png", color: "#FF4D6D" },
-  { name: "Mango", img: "/card_can_7.png", color: "#F0A126" },
-  { name: "Peach", img: "/card_can_8.png", color: "#F3A98C" },
+type Flavor = { name: string; img: string; color: string; note: string };
+
+const FLAVORS: Flavor[] = [
+  { name: "Classic Orange", img: "/card_can_1.png", color: "#F28C1B", note: "Bright, crisp, flagship" },
+  { name: "Pineapple", img: "/card_can_2.png", color: "#F5C12D", note: "Golden tropical lift" },
+  { name: "Tropical Blend", img: "/card_can_3.png", color: "#2FB8A6", note: "Citrus + island balance" },
+  { name: "Strawberry", img: "/card_can_4.png", color: "#E23B4A", note: "Berry-forward, clean finish" },
+  { name: "Blood Orange", img: "/card_can_5.png", color: "#C93A1C", note: "Deep citrus + elegance" },
+  { name: "Watermelon", img: "/card_can_6.png", color: "#FF4D6D", note: "Fresh, modern, bright" },
+  { name: "Mango", img: "/card_can_7.png", color: "#F0A126", note: "Silky tropical richness" },
+  { name: "Peach", img: "/card_can_8.png", color: "#F3A98C", note: "Soft, luxe, champagne-friendly" },
 ];
 
 const css = `
-  :root{
-    --ink:#1e1e1e;
-    --ivory:#fbf5ea;
-    --ivory-2:#f6eddc;
-    --card:#ffffff;
-    --shadow: 0 18px 55px rgba(18,18,18,.10);
-    --shadow-2: 0 10px 35px rgba(18,18,18,.12);
-    --radius: 26px;
-    --radius-2: 18px;
-  }
+:root{
+  --ink:#141414;
+  --onyx:#0B0B0B;
+  --ivory:#FBF2DF;
+  --champ:#F6E7C8;
+  --gold:#D4AF37;
 
-  *{ box-sizing:border-box; }
-  body{ margin:0; background:linear-gradient(180deg,var(--ivory) 0%, var(--ivory-2) 100%); color:var(--ink); }
+  --panel: rgba(255,255,255,.72);
+  --glass: rgba(255,255,255,.10);
+  --border: rgba(20,20,20,.10);
 
-  .page{
-    min-height:100vh;
-  }
+  --r-xl: 34px;
+  --r-lg: 22px;
+  --r-md: 16px;
 
-  .topbar{
-    position:sticky;
-    top:0;
-    z-index:50;
-    backdrop-filter:saturate(140%) blur(10px);
-    background:rgba(251,245,234,.72);
-    border-bottom:1px solid rgba(30,30,30,.08);
-  }
-  .container{
-    width:min(1200px, 92vw);
-    margin:0 auto;
-  }
-  .nav{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 0;
-    gap:18px;
-  }
-  .brand{
-    font-weight:700;
-    letter-spacing:.2px;
-  }
-  .navlinks{
-    display:flex;
-    gap:22px;
-    font-size:14px;
-  }
-  .navlinks a{
-    color:rgba(30,30,30,.82);
-    text-decoration:none;
-  }
-  .navlinks a:hover{ color:rgba(30,30,30,1); }
+  --shadow1: 0 28px 90px rgba(0,0,0,.18);
+  --shadow2: 0 18px 55px rgba(0,0,0,.14);
+  --shadow3: 0 12px 28px rgba(0,0,0,.12);
+}
 
-  .navcta{
-    background:#121212;
-    color:#fff;
-    text-decoration:none;
-    padding:10px 14px;
-    border-radius:999px;
-    font-size:13px;
-    box-shadow: 0 10px 22px rgba(0,0,0,.18);
-    white-space:nowrap;
-  }
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 600px at 12% 8%, rgba(242,140,27,.28) 0%, rgba(242,140,27,0) 62%),
+    radial-gradient(900px 600px at 88% 12%, rgba(226,59,74,.20) 0%, rgba(226,59,74,0) 62%),
+    radial-gradient(1200px 900px at 55% 110%, rgba(212,175,55,.18) 0%, rgba(212,175,55,0) 58%),
+    linear-gradient(180deg, #FFF7E8 0%, #F7EAD2 55%, #F2E0BE 100%);
+}
 
-  .hero{
-    padding:26px 0 16px;
-  }
+a{ color:inherit; }
+.container{ width:min(1180px, 92vw); margin:0 auto; }
 
-  .heroShell{
-    display:grid;
-    grid-template-columns: 1.15fr 1fr;
-    gap:18px;
-    align-items:stretch;
-    border-radius: calc(var(--radius) + 8px);
-    overflow:hidden;
-    box-shadow: var(--shadow);
-    background:
-      radial-gradient(1200px 500px at 20% 15%, rgba(255,190,120,.35) 0%, rgba(255,190,120,0) 55%),
-      radial-gradient(900px 420px at 72% 10%, rgba(255,90,140,.18) 0%, rgba(255,90,140,0) 60%),
-      linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.35) 100%);
-    border:1px solid rgba(30,30,30,.08);
-  }
+.topbar{
+  position:sticky; top:0; z-index:50;
+  backdrop-filter: blur(14px) saturate(140%);
+  background: rgba(251,242,223,.72);
+  border-bottom: 1px solid rgba(20,20,20,.08);
+}
+.nav{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0; gap:16px;
+}
+.brand{
+  display:flex; align-items:center; gap:10px;
+  font-weight:800;
+  letter-spacing:.2px;
+}
+.brandMark{
+  width:10px; height:10px; border-radius:999px;
+  background: linear-gradient(180deg, var(--gold), #b9922b);
+  box-shadow: 0 0 0 3px rgba(212,175,55,.18);
+}
+.navlinks{ display:flex; gap:20px; font-size:13px; }
+.navlinks a{ text-decoration:none; color: rgba(20,20,20,.76); }
+.navlinks a:hover{ color: rgba(20,20,20,1); }
+.pill{
+  text-decoration:none;
+  padding:10px 14px;
+  border-radius:999px;
+  background:#121212;
+  color:#fff;
+  box-shadow: var(--shadow3);
+  font-size:13px;
+  white-space:nowrap;
+}
 
-  .heroVisual{
-    position:relative;
-    min-height: 430px;
-    background: radial-gradient(circle at 50% 15%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 60%);
-  }
+.hero{
+  padding: 22px 0 18px;
+}
+.stage{
+  position:relative;
+  border-radius: var(--r-xl);
+  overflow:hidden;
+  box-shadow: var(--shadow1);
+  border: 1px solid rgba(255,255,255,.38);
+  background: linear-gradient(180deg, rgba(10,10,10,.84), rgba(10,10,10,.54) 55%, rgba(10,10,10,.20));
+}
+.stage::before{
+  content:"";
+  position:absolute; inset:-2px;
+  background:
+    radial-gradient(1000px 600px at 18% 12%, rgba(242,140,27,.42) 0%, rgba(242,140,27,0) 60%),
+    radial-gradient(1000px 600px at 82% 14%, rgba(255,77,109,.28) 0%, rgba(255,77,109,0) 60%),
+    radial-gradient(1200px 800px at 55% 105%, rgba(212,175,55,.22) 0%, rgba(212,175,55,0) 62%);
+  filter: blur(0px);
+  opacity: .95;
+}
+.grain{
+  pointer-events:none;
+  position:absolute; inset:0;
+  opacity:.14;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
 
-  .heroImgDesktop{ display:block; }
-  .heroImgMobile{ display:none; }
+.heroGrid{
+  position:relative;
+  display:grid;
+  grid-template-columns: 1fr 1.12fr;
+  gap: 18px;
+  padding: 28px;
+  min-height: 620px;
+}
 
-  .heroCopy{
-    padding:34px 34px 28px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    background: linear-gradient(180deg, rgba(255,255,255,.72) 0%, rgba(255,255,255,.58) 100%);
-  }
+.copy{
+  align-self:center;
+  color: rgba(255,255,255,.94);
+  padding: 10px 6px 10px 10px;
+}
+.kicker{
+  margin:0 0 10px;
+  font-size:12px;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color: rgba(255,255,255,.72);
+}
+.h1{
+  margin:0 0 10px;
+  font-size: 58px;
+  line-height: 1.0;
+  letter-spacing: -.02em;
+}
+.h2{
+  margin:0 0 14px;
+  font-size: 18px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.78);
+  max-width: 54ch;
+}
+.proofRow{
+  display:flex; gap:10px; flex-wrap:wrap;
+  margin: 16px 0 18px;
+}
+.proof{
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.86);
+  font-size: 12px;
+}
+.ctaRow{ display:flex; gap:10px; flex-wrap:wrap; }
+.ctaA{
+  text-decoration:none;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%);
+  color: #121212;
+  box-shadow: 0 18px 44px rgba(0,0,0,.28);
+  font-size: 13px;
+  font-weight: 700;
+}
+.ctaB{
+  text-decoration:none;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.20);
+  color: rgba(255,255,255,.92);
+  font-size: 13px;
+  font-weight: 600;
+}
 
-  .kicker{
-    font-size:12px;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    color:rgba(30,30,30,.64);
-    margin:0 0 10px;
-  }
-  h1{
-    margin:0 0 10px;
-    font-size:44px;
-    line-height:1.02;
-    letter-spacing:-.02em;
-  }
-  .sub{
-    margin:0 0 18px;
-    color:rgba(30,30,30,.72);
-    font-size:15px;
-    line-height:1.45;
-  }
+.spectrumWrap{
+  margin-top: 18px;
+  border-radius: var(--r-lg);
+  background: rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 18px 55px rgba(0,0,0,.18);
+  padding: 14px;
+  max-width: 640px;
+}
+.spectrumTitle{
+  margin:0 0 10px;
+  font-size:12px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color: rgba(255,255,255,.72);
+}
+.spectrumBar{
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    #F28C1B 0%,
+    #F5C12D 14%,
+    #2FB8A6 28%,
+    #E23B4A 42%,
+    #C93A1C 56%,
+    #FF4D6D 70%,
+    #F0A126 84%,
+    #F3A98C 100%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.30);
+}
+.spectrumDots{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.dot{
+  display:flex; align-items:center; gap:10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.86);
+  font-size: 12px;
+}
+.swatch{
+  width:10px; height:10px; border-radius:999px;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.35);
+}
 
-  .heroBtns{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:8px;
-  }
-  .primaryBtn{
-    background:#121212;
-    color:#fff;
-    text-decoration:none;
-    padding:12px 14px;
-    border-radius:999px;
-    font-size:13px;
-    box-shadow: 0 12px 26px rgba(0,0,0,.16);
-  }
-  .secondaryBtn{
-    background:rgba(255,255,255,.8);
-    border:1px solid rgba(30,30,30,.10);
-    color:#121212;
-    text-decoration:none;
-    padding:12px 14px;
-    border-radius:999px;
-    font-size:13px;
-  }
+.visual{
+  position:relative;
+  border-radius: var(--r-xl);
+  overflow:hidden;
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 22px 80px rgba(0,0,0,.26);
+  background: rgba(255,255,255,.06);
+}
+.visualOverlay{
+  pointer-events:none;
+  position:absolute; inset:0;
+  background:
+    radial-gradient(800px 500px at 20% 20%, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 55%),
+    radial-gradient(800px 500px at 85% 15%, rgba(212,175,55,.10) 0%, rgba(212,175,55,0) 60%),
+    linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.22));
+}
+.badge{
+  position:absolute; left:16px; bottom:16px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(10,10,10,.55);
+  border: 1px solid rgba(255,255,255,.16);
+  color: rgba(255,255,255,.86);
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+}
 
-  /* ===== SPECTRUM (the “lively but luxury” piece) ===== */
-  .spectrumWrap{
-    margin-top:16px;
-    padding:14px 14px 12px;
-    border-radius: 18px;
-    border:1px solid rgba(30,30,30,.10);
-    background: rgba(255,255,255,.68);
-    box-shadow: 0 10px 26px rgba(18,18,18,.08);
-  }
-  .spectrumBar{
-    height:10px;
-    border-radius:999px;
-    background: linear-gradient(90deg,
-      #F28C1B 0%,
-      #F5C12D 14%,
-      #2FB8A6 28%,
-      #E23B4A 42%,
-      #C93A1C 56%,
-      #FF4D6D 70%,
-      #F0A126 84%,
-      #F3A98C 100%
-    );
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.45);
-  }
-  .dots{
-    display:grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap:8px;
-    margin-top:10px;
-  }
-  .dot{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 10px;
-    border-radius:14px;
-    background: rgba(255,255,255,.72);
-    border:1px solid rgba(30,30,30,.08);
-    min-width:0;
-  }
-  .swatch{
-    width:10px; height:10px;
-    border-radius:999px;
-    box-shadow: 0 0 0 2px rgba(255,255,255,.75);
-    flex:0 0 auto;
-  }
-  .dot span{
-    font-size:12px;
-    color: rgba(30,30,30,.78);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
+.section{
+  padding: 34px 0;
+}
+.headerRow{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.title{
+  margin:0;
+  font-size: 22px;
+  letter-spacing: -.01em;
+}
+.sub{
+  margin:6px 0 0;
+  color: rgba(20,20,20,.72);
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 74ch;
+}
+.cards{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.card{
+  border-radius: var(--r-lg);
+  background: rgba(255,255,255,.74);
+  border: 1px solid rgba(20,20,20,.10);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+  transform: translateZ(0);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 26px 75px rgba(0,0,0,.16);
+}
+.cardTop{
+  position:relative;
+  height: 240px;
+  background: rgba(251,242,223,.78);
+}
+.cardBottom{
+  padding: 12px 12px 14px;
+}
+.cardName{
+  margin:0 0 6px;
+  font-weight: 800;
+  font-size: 13px;
+}
+.cardNote{
+  margin:0 0 10px;
+  font-size: 12px;
+  color: rgba(20,20,20,.70);
+}
+.accent{
+  height: 4px;
+  border-radius: 999px;
+  width: 100%;
+}
 
-  .fineprint{
-    margin:12px 0 0;
-    font-size:12px;
-    color: rgba(30,30,30,.55);
-  }
+.split{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+.panel{
+  border-radius: var(--r-xl);
+  background: rgba(255,255,255,.74);
+  border: 1px solid rgba(20,20,20,.10);
+  box-shadow: var(--shadow2);
+  padding: 18px;
+}
+.panel h3{
+  margin:0 0 10px;
+  font-size: 14px;
+}
+.panel ul{
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: rgba(20,20,20,.74);
+  font-size: 13px;
+}
+.panel li{ margin: 6px 0; }
 
-  .section{
-    padding:34px 0;
-  }
-  .sectionAlt{
-    background: linear-gradient(180deg, rgba(255,255,255,.0) 0%, rgba(255,255,255,.38) 100%);
-    border-top:1px solid rgba(30,30,30,.06);
-    border-bottom:1px solid rgba(30,30,30,.06);
-  }
-  .h2{
-    margin:0 0 6px;
-    font-size:22px;
-    letter-spacing:-.01em;
-  }
-  .p{
-    margin:0;
-    color:rgba(30,30,30,.70);
-    font-size:14px;
-    line-height:1.5;
-  }
+.form{
+  display:grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.input, .select, .textarea{
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(20,20,20,.12);
+  background: rgba(255,255,255,.92);
+  padding: 12px 12px;
+  font-size: 13px;
+  outline: none;
+}
+.textarea{ min-height: 110px; resize: vertical; }
+.submit{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  border:0;
+  border-radius: 999px;
+  padding: 12px 16px;
+  background: #121212;
+  color:#fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor:pointer;
+  box-shadow: var(--shadow3);
+}
+.small{
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(20,20,20,.62);
+}
 
-  .grid{
-    margin-top:18px;
-    display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap:16px;
-  }
-  .card{
-    background: rgba(255,255,255,.80);
-    border:1px solid rgba(30,30,30,.08);
-    border-radius: var(--radius-2);
-    box-shadow: var(--shadow-2);
-    overflow:hidden;
-    transform: translateZ(0);
-    transition: transform .18s ease, box-shadow .18s ease;
-  }
-  .card:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 18px 50px rgba(18,18,18,.14);
-  }
-  .cardTop{
-    position:relative;
-    height:220px;
-    background: rgba(248,240,224,.7);
-  }
-  .cardBody{
-    padding:12px 12px 14px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-  }
-  .cardName{
-    font-weight:600;
-    font-size:13px;
-  }
-  .accent{
-    height:4px;
-    border-radius:999px;
-    width:100%;
-    margin-top:8px;
-    opacity:.95;
-  }
+footer{
+  padding: 26px 0 34px;
+  color: rgba(20,20,20,.58);
+  font-size: 12px;
+}
 
-  .twoCol{
-    display:grid;
-    grid-template-columns: 1.1fr .9fr;
-    gap:16px;
-    align-items:start;
-  }
-  .panel{
-    background: rgba(255,255,255,.78);
-    border:1px solid rgba(30,30,30,.08);
-    border-radius: var(--radius-2);
-    padding:16px;
-    box-shadow: var(--shadow-2);
-  }
-  .panel ul{ margin:10px 0 0; padding-left:18px; color:rgba(30,30,30,.70); font-size:13px; }
-  .panel li{ margin:6px 0; }
-
-  footer{
-    padding:26px 0;
-    color: rgba(30,30,30,.58);
-    font-size:12px;
-  }
-
-  @media (max-width: 980px){
-    .heroShell{ grid-template-columns: 1fr; }
-    .heroVisual{ min-height: 360px; }
-    h1{ font-size: 38px; }
-    .grid{ grid-template-columns: repeat(2, 1fr); }
-    .twoCol{ grid-template-columns: 1fr; }
-    .heroImgDesktop{ display:none; }
-    .heroImgMobile{ display:block; }
-  }
-
-  @media (max-width: 540px){
-    .navlinks{ display:none; }
-    .grid{ grid-template-columns: 1fr; }
-    .dots{ grid-template-columns: repeat(2, 1fr); }
-    h1{ font-size: 34px; }
-  }
+@media (max-width: 1040px){
+  .heroGrid{ grid-template-columns: 1fr; min-height: unset; }
+  .h1{ font-size: 48px; }
+  .cards{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .split{ grid-template-columns: 1fr; }
+  .spectrumDots{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 560px){
+  .navlinks{ display:none; }
+  .heroGrid{ padding: 18px; }
+  .h1{ font-size: 40px; }
+  .cards{ grid-template-columns: 1fr; }
+}
 `;
 
 export default function HomePage() {
+  const spectrum = useMemo(() => FLAVORS, []);
+
   return (
-    <main className="page">
+    <main>
       <style>{css}</style>
 
       <header className="topbar">
         <div className="container">
           <div className="nav">
-            <div className="brand">MyMosa®</div>
+            <div className="brand">
+              <span className="brandMark" />
+              <span>MyMosa®</span>
+            </div>
 
             <nav className="navlinks" aria-label="Primary">
-              <a href="#product">Product</a>
-              <a href="#distribution">Distribution</a>
-              <a href="#preorder">Pre-Order</a>
+              <a href="#founding8">Founding 8</a>
+              <a href="#partners">Partners</a>
               <a href="#contact">Contact</a>
             </nav>
 
-            <a className="navcta" href="#preorder">
-              Find MyMosa
+            <a className="pill" href="#contact">
+              Request Access
             </a>
           </div>
         </div>
       </header>
 
-      <section className="hero" id="preorder">
+      {/* HERO — OUR DNA (cinematic, post-opulence, controlled spectrum) */}
+      <section className="hero">
         <div className="container">
-          <div className="heroShell">
-            <div className="heroVisual">
-              {/* ✅ Force the 8-can hero (desktop) */}
-              <Image
-                className="heroImgDesktop"
-                src="/hero_8cans_desktop.png"
-                alt="MyMosa 8-can lineup"
-                fill
-                priority
-                sizes="(max-width: 980px) 100vw, 60vw"
-                style={{ objectFit: "cover" }}
-              />
+          <div className="stage">
+            <div className="grain" />
 
-              {/* ✅ Optional mobile hero if you have it */}
-              <Image
-                className="heroImgMobile"
-                src="/hero_8cans_mobile.png"
-                alt="MyMosa 8-can lineup (mobile)"
-                fill
-                priority
-                sizes="100vw"
-                style={{ objectFit: "cover" }}
-              />
-            </div>
+            <div className="heroGrid">
+              <div className="copy">
+                <p className="kicker">BRUNCH • LUXURY • LEGACY</p>
+                <h1 className="h1">MyMosa®</h1>
+                <p className="h2">
+                  Premium Mimosa Wine Cocktail in the official <b>250 mL slim can</b>. Our spectrum is intentional:
+                  vivid flavor identity, luxury restraint, clean editorial finish.
+                </p>
 
-            <div className="heroCopy">
-              <p className="kicker">Premium RTD Mimosa • 250 mL slim can</p>
-              <h1>MyMosa® — Premium Mimosa Wine Cocktail</h1>
-              <p className="sub">
-                Eight founding flavors. Champagne/ivory upper half, signature color lower band,
-                crisp editorial lighting — built for brunch, rooftops, and premium placements.
-              </p>
+                <div className="proofRow" aria-label="Proof points">
+                  <div className="proof">Founding 8 • Spectrum Signature</div>
+                  <div className="proof">Serve Chilled • Brunch-Ready</div>
+                  <div className="proof">Retail + Venue + Hotel Placement</div>
+                </div>
 
-              <div className="heroBtns">
-                <a className="primaryBtn" href="#product">
-                  Explore Flavors
-                </a>
-                <a className="secondaryBtn" href="#contact">
-                  Request Access
-                </a>
-              </div>
+                <div className="ctaRow">
+                  <a className="ctaA" href="#founding8">Explore Founding 8</a>
+                  <a className="ctaB" href="#partners">Partner / Distribution</a>
+                </div>
 
-              {/* ✅ SPECTRUM goes RIGHT HERE (directly after heroBtns) */}
-              <div className="spectrumWrap" aria-label="MyMosa flavor spectrum">
-                <div className="spectrumBar" />
-                <div className="dots">
-                  {flavors.map((f) => (
-                    <div key={f.name} className="dot" title={f.name}>
-                      <div className="swatch" style={{ background: f.color }} />
-                      <span>{f.name}</span>
-                    </div>
-                  ))}
+                {/* ✅ Spectrum — directly after CTA row */}
+                <div className="spectrumWrap" aria-label="MyMosa Spectrum">
+                  <p className="spectrumTitle">THE SPECTRUM</p>
+                  <div className="spectrumBar" />
+                  <div className="spectrumDots">
+                    {spectrum.map((f) => (
+                      <div className="dot" key={f.name}>
+                        <span className="swatch" style={{ background: f.color }} />
+                        <span>{f.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <p className="fineprint">
-                *Availability varies by market. Please drink responsibly.
-              </p>
+              <div className="visual" aria-label="MyMosa 8-can hero">
+                {/* ✅ DESKTOP hero */}
+                <Image
+                  src="/hero_8cans_desktop.png"
+                  alt="MyMosa eight-can lineup"
+                  fill
+                  priority
+                  sizes="(max-width: 1040px) 92vw, 620px"
+                  style={{ objectFit: "cover" }}
+                />
+                <div className="visualOverlay" />
+                <div className="badge">Eight Founding Flavors • Official Can System</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section" id="product">
+      {/* FOUNDING 8 — editorial product grid (not the old chunky cards) */}
+      <section className="section" id="founding8">
         <div className="container">
-          <div>
-            <div className="h2">Eight Founding Flavors</div>
-            <p className="p">
-              Locked 250 mL slim can format. Luxury, clean, and color-forward — the full spectrum.
-            </p>
+          <div className="headerRow">
+            <div>
+              <h2 className="title">The Founding 8</h2>
+              <p className="sub">
+                This is our signature wall — eight flavors designed to read premium at distance, photograph like luxury,
+                and scale cleanly into retail and venue placements.
+              </p>
+            </div>
           </div>
 
-          <div className="grid">
-            {flavors.map((f) => (
-              <article key={f.name} className="card">
+          <div className="cards" aria-label="Founding 8 grid">
+            {FLAVORS.map((f) => (
+              <div className="card" key={f.name}>
                 <div className="cardTop">
                   <Image
                     src={f.img}
                     alt={f.name}
                     fill
-                    sizes="(max-width: 980px) 100vw, 25vw"
+                    sizes="(max-width: 1040px) 50vw, 280px"
                     style={{ objectFit: "contain", padding: "18px" }}
                   />
                 </div>
-                <div className="cardBody">
-                  <div style={{ minWidth: 0 }}>
-                    <div className="cardName">{f.name}</div>
-                    <div className="accent" style={{ background: f.color }} />
-                  </div>
+                <div className="cardBottom">
+                  <p className="cardName">{f.name}</p>
+                  <p className="cardNote">{f.note}</p>
+                  <div className="accent" style={{ background: f.color }} />
                 </div>
-              </article>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section sectionAlt" id="distribution">
+      {/* PARTNERS — clean, luxe, operational */}
+      <section className="section" id="partners">
         <div className="container">
-          <div className="twoCol">
+          <div className="headerRow">
             <div>
-              <div className="h2">Distribution</div>
-              <p className="p">
-                Built for high-velocity retail and premium placements. If you’re a distributor,
-                buyer, or venue partner — request access and we’ll route you to the right channel.
+              <h2 className="title">Partners & Distribution</h2>
+              <p className="sub">
+                For distributors, buyers, hotels, venues, and event operators — we route requests to the right channel.
               </p>
             </div>
+          </div>
 
+          <div className="split">
             <div className="panel">
-              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
-                Partner Requests
-              </div>
+              <h3>Partner Requests</h3>
               <ul>
                 <li>Retail / buyer interest</li>
-                <li>Distributor inquiries</li>
+                <li>Distributor onboarding</li>
                 <li>Hotel / venue placements</li>
                 <li>Launch events & tastings</li>
               </ul>
-              <div style={{ marginTop: 12 }}>
-                <a className="primaryBtn" href="#contact">
-                  Open Partner Form
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section" id="contact">
-        <div className="container">
-          <div className="twoCol">
-            <div>
-              <div className="h2">Contact</div>
-              <p className="p">
-                For press, partnerships, or market rollout conversations, use the access form and
-                we’ll respond with next steps.
-              </p>
+              <p className="small">We respond with next steps and placement options.</p>
             </div>
 
-            <div className="panel">
-              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>Quick Links</div>
-              <ul>
-                <li>
-                  <a href="#preorder" style={{ color: "#121212" }}>
-                    Request Access
-                  </a>
-                </li>
-                <li>
-                  <a href="#distribution" style={{ color: "#121212" }}>
-                    Partner Form
-                  </a>
-                </li>
-              </ul>
+            <div className="panel" id="contact">
+              <h3>Request Access</h3>
+
+              {/* NOTE: This is a UI form only. If you want it to actually send emails,
+                 we’ll wire it to a Next.js route handler or a form service next. */}
+              <form
+                className="form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  alert("Captured. Next step: connect form to email / CRM.");
+                }}
+              >
+                <input className="input" name="name" placeholder="Name" required />
+                <input className="input" name="email" placeholder="Email" type="email" required />
+                <select className="select" name="type" defaultValue="Buyer / Retail">
+                  <option>Buyer / Retail</option>
+                  <option>Distributor</option>
+                  <option>Hotel / Venue</option>
+                  <option>Press / Collab</option>
+                  <option>Event / Tasting</option>
+                </select>
+                <textarea className="textarea" name="message" placeholder="What market / what request?" />
+                <button className="submit" type="submit">Submit Request</button>
+                <p className="small">Availability varies by market. Please drink responsibly.</p>
+              </form>
             </div>
           </div>
         </div>
